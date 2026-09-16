@@ -2,32 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>InstaFetch — Video Downloader</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>InstaFetch — Authorized Media Downloader</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh;background:#08090d;color:#fff;display:flex;align-items:center;justify-content:center;padding:24px}
-.bg{position:fixed;inset:0;overflow:hidden;pointer-events:none}
-.orb{position:absolute;width:420px;height:420px;border-radius:50%;filter:blur(100px);opacity:.18}
-.o1{background:#9b5cff;top:-180px;left:-100px}.o2{background:#ff3d81;right:-150px;bottom:-180px}
+.bg{position:fixed;inset:0;overflow:hidden;pointer-events:none}.orb{position:absolute;width:420px;height:420px;border-radius:50%;filter:blur(100px);opacity:.18}.o1{background:#9b5cff;top:-180px;left:-100px}.o2{background:#ff3d81;right:-150px;bottom:-180px}
 .card{width:min(760px,100%);position:relative;border:1px solid #252631;background:rgba(15,16,23,.88);backdrop-filter:blur(18px);border-radius:28px;padding:42px;box-shadow:0 25px 100px rgba(0,0,0,.45)}
-.logo{display:flex;align-items:center;gap:12px;margin-bottom:42px;font-weight:800;font-size:20px}
-.logo-mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#ffcf4a,#ff3d81,#7c4dff);display:grid;place-items:center;font-size:18px}
-.hero{text-align:center}.hero h1{font-size:clamp(34px,7vw,58px);letter-spacing:-2.5px;line-height:1.02;margin-bottom:16px}
-.hero h1 span{background:linear-gradient(90deg,#ffcf4a,#ff4d91,#9b6cff);-webkit-background-clip:text;color:transparent}
-.hero p{color:#9b9daa;max-width:530px;margin:auto;line-height:1.6;font-size:15px}
+.logo{display:flex;align-items:center;gap:12px;margin-bottom:42px;font-weight:800;font-size:20px}.logo-mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#ffcf4a,#ff3d81,#7c4dff);display:grid;place-items:center;font-size:18px}
+.hero{text-align:center}.hero h1{font-size:clamp(34px,7vw,58px);letter-spacing:-2.5px;line-height:1.02;margin-bottom:16px}.hero h1 span{background:linear-gradient(90deg,#ffcf4a,#ff4d91,#9b6cff);-webkit-background-clip:text;color:transparent}
+.hero p{color:#9b9daa;max-width:560px;margin:auto;line-height:1.6;font-size:15px}
 .form{margin-top:32px;display:flex;gap:10px;padding:7px;background:#0a0b10;border:1px solid #292a35;border-radius:16px}
-input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:white;padding:14px;font-size:15px}
-input::placeholder{color:#626470}
-button{border:0;border-radius:11px;padding:0 22px;background:#fff;color:#090a0e;font-weight:750;cursor:pointer;min-height:48px;transition:.2s}
-button:hover{transform:translateY(-1px);opacity:.92}
+input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:white;padding:14px;font-size:15px}input::placeholder{color:#626470}
+button{border:0;border-radius:11px;padding:0 22px;background:#fff;color:#090a0e;font-weight:750;cursor:pointer;min-height:48px;transition:.2s}button:hover{transform:translateY(-1px);opacity:.92}button:disabled{opacity:.55;cursor:wait;transform:none}
 .status{min-height:22px;text-align:center;color:#8d8f9b;font-size:13px;margin-top:14px}
-.result{display:none;margin-top:25px;border:1px solid #292a35;background:#0b0c11;border-radius:18px;padding:16px}
-.result.show{display:block}
-.preview{aspect-ratio:16/9;border-radius:12px;background:#15161e;display:grid;place-items:center;color:#666976;overflow:hidden}
-.preview video{width:100%;height:100%;object-fit:cover}
-.actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px}
-.meta{font-size:13px;color:#8f919d}.download{background:linear-gradient(135deg,#fff,#ddd);color:#08090d}
+.result{display:none;margin-top:25px;border:1px solid #292a35;background:#0b0c11;border-radius:18px;padding:16px}.result.show{display:block}
+.preview{aspect-ratio:16/9;border-radius:12px;background:#15161e;display:grid;place-items:center;color:#666976;overflow:hidden}.preview video{width:100%;height:100%;object-fit:cover}
+.actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px}.meta{font-size:13px;color:#8f919d}.download{background:linear-gradient(135deg,#fff,#ddd);color:#08090d}
 .note{margin-top:28px;text-align:center;color:#666875;font-size:12px;line-height:1.6}
 @media(max-width:560px){.card{padding:28px 18px;border-radius:22px}.form{flex-direction:column;background:transparent;border:0;padding:0}.form input{background:#0a0b10;border:1px solid #292a35;border-radius:13px;padding:15px}.form button{width:100%}.actions{flex-direction:column;align-items:stretch}.download{width:100%}}
 </style>
@@ -38,9 +29,9 @@ button:hover{transform:translateY(-1px);opacity:.92}
   <div class="logo"><div class="logo-mark">▶</div> InstaFetch</div>
   <section class="hero">
     <h1>Download your <span>video.</span></h1>
-    <p>Paste an Instagram URL below to fetch media from sources you are authorized to access.</p>
+    <p>Fetch media from an Instagram Professional account you control or are authorized to manage.</p>
     <div class="form">
-      <input id="url" type="url" placeholder="Paste Instagram URL here..." autocomplete="off">
+      <input id="url" type="url" placeholder="Paste your Instagram Reel/post URL..." autocomplete="off">
       <button id="fetch">Get Video</button>
     </div>
     <div id="status" class="status"></div>
@@ -49,27 +40,56 @@ button:hover{transform:translateY(-1px);opacity:.92}
     <div class="preview" id="preview">Video preview will appear here</div>
     <div class="actions">
       <div class="meta" id="meta">Ready</div>
-      <button class="download" id="download">Download Video</button>
+      <a id="downloadWrap" href="#" target="_blank" rel="noopener" style="text-decoration:none">
+        <button class="download" id="download" type="button">Download Video</button>
+      </a>
     </div>
   </section>
-  <div class="note">Use this tool only for content you own or have permission to download. API/backend integration is required to retrieve media.</div>
+  <div class="note">This version only looks up media exposed by the connected Instagram API account. Use it only for content you own or have permission to download.</div>
 </main>
 <script>
 const input=document.getElementById('url'), status=document.getElementById('status');
 const result=document.getElementById('result'), preview=document.getElementById('preview');
-document.getElementById('fetch').onclick=async()=>{
+const fetchBtn=document.getElementById('fetch'), meta=document.getElementById('meta'), downloadWrap=document.getElementById('downloadWrap');
+
+function validInstagramUrl(value){
+  try{
+    const u=new URL(value);
+    return (u.protocol==='https:'||u.protocol==='http:') &&
+      /(^|\.)instagram\.com$/i.test(u.hostname) &&
+      /^\/(reel|reels|p|tv)\//i.test(u.pathname);
+  }catch{return false}
+}
+
+fetchBtn.onclick=async()=>{
   const url=input.value.trim();
-  const ok=/^https?:\/\/(www\.)?instagram\.com\/(reel|reels|p|tv)\/[^/?#]+/i.test(url);
-  if(!ok){status.textContent='Please enter a valid Instagram Reel/post URL.';result.classList.remove('show');return}
-  status.textContent='URL accepted. Connect your authorized media API/backend here.';
-  result.classList.add('show');
-  preview.textContent='Backend/API response will be displayed here.';
-  document.getElementById('meta').textContent='Waiting for media URL';
+  if(!validInstagramUrl(url)){
+    status.textContent='Please enter a valid Instagram Reel/post URL.';
+    result.classList.remove('show'); return;
+  }
+  fetchBtn.disabled=true; fetchBtn.textContent='Fetching...'; status.textContent='Checking the connected Instagram account...';
+  result.classList.remove('show');
+  try{
+    const r=await fetch('/api/media?permalink='+encodeURIComponent(url));
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error||'Unable to fetch media.');
+    result.classList.add('show');
+    meta.textContent=(data.media_type||'Media')+' • '+(data.caption ? data.caption.slice(0,70) : 'Ready to download');
+    preview.innerHTML='';
+    if(data.media_url && (data.media_type==='VIDEO' || data.media_type==='REELS')){
+      const v=document.createElement('video'); v.controls=true; v.playsInline=true; v.src=data.media_url; preview.appendChild(v);
+    }else{
+      preview.textContent='Media found. Open the download button to view it.';
+    }
+    downloadWrap.href=data.media_url;
+    status.textContent='Media found successfully.';
+  }catch(err){
+    status.textContent=err.message;
+  }finally{
+    fetchBtn.disabled=false; fetchBtn.textContent='Get Video';
+  }
 };
-document.getElementById('download').onclick=()=>{
-  status.textContent='No media URL is connected yet. Add your authorized backend/API endpoint first.';
-};
-input.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('fetch').click()});
+input.addEventListener('keydown',e=>{if(e.key==='Enter')fetchBtn.click()});
 </script>
 </body>
 </html>
