@@ -9,56 +9,140 @@ export default async function handler(req, res) {
     });
   }
 
-  let url;
+  let pageUrl;
 
   try {
-    url = new URL(permalink);
+    pageUrl = new URL(permalink);
   } catch {
     return res.status(400).json({
       error: "Invalid Instagram URL."
     });
   }
 
-  // Only Instagram Reel/Post URLs
   if (
-    !/(^|\.)instagram\.com$/i.test(url.hostname) ||
-    !/^\/(reel|reels|p|tv)\b/i.test(url.pathname)
+    !/(^|\.)instagram\.com$/i.test(pageUrl.hostname) ||
+    !/^\/(reel|reels|p|tv)\b/i.test(pageUrl.pathname)
   ) {
     return res.status(400).json({
       error: "Please enter a valid Instagram Reel URL."
     });
   }
 
+  // Get the Reel shortcode
+  const parts = pageUrl.pathname.split("/").filter(Boolean);
+  const code = parts[1];
+
+  if (!code) {
+    return res.status(400).json({
+      error: "Instagram Reel code could not be found."
+    });
+  }
+
   try {
-    const response = await fetch(url.toString(), {
+    const response = await fetch(pageUrl.toString(), {
+      redirect: "follow",
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140 Safari/537.36",
         "Accept":
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
-      },
-      redirect: "follow"
+          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Referer": "https://www.instagram.com/"
+      }
     });
 
     if (!response.ok) {
       return res.status(502).json({
-        error: "Instagram could not be reached. Please try again."
+        error: "Instagram could not be reached."
       });
     }
 
     const html = await response.text();
 
-    // Try Open Graph video metadata
-    const videoMatch =
-      html.match(
-        /<meta[^>]+property=["']og:video(?::secure_url)?["'][^>]+content=["']([^"']+)["']/i
-      ) ||
-      html.match(
-        /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:video(?::secure_url)?["']/i
+    let videoUrl = null;
+    let thumbnail = null;
+
+    /*
+     * METHOD 1
+     * Instagram Relay / embedded page data
+     *
+     * We look for the Reel shortcode and then
+     * extract its video_versions array.
+     */
+
+    const codeMarker = `"code":"${code}"`;
+    const codeIndex = html.indexOf(codeMarker);
+
+    if (codeIndex !== -1) {
+      const videoIndex = html.indexOf(
+        '"video_versions":',
+        codeIndex
       );
 
-    // Try thumbnail
-    const imageMatch =
+      if (videoIndex !== -1) {
+        const afterVideo = html.slice(videoIndex);
+
+        const match = afterVideo.match(
+          /"video_versions":(\[[\s\S]*?\]),"has_audio"/
+        );
+
+        if (match && match[1]) {
+          try {
+            const versions = JSON.parse(match[1]);
+
+            if (Array.isArray(versions) && versions.length > 0) {
+              const validVersions = versions.filter(
+                item => item && typeof item.url === "string"
+              );
+
+              if (validVersions.length > 0) {
+                // Prefer the largest available video
+                validVersions.sort((a, b) => {
+                  const aSize = (a.width || 0) * (a.height || 0);
+                  const bSize = (b.width || 0) * (b.height || 0);
+                  return bSize - aSize;
+                });
+
+                videoUrl = validVersions[0].url;
+              }
+            }
+          } catch (error) {
+            console.log("video_versions JSON parse failed");
+          }
+        }
+      }
+    }
+
+    /*
+     * METHOD 2
+     * Open Graph fallback
+     */
+
+    if (!videoUrl) {
+      const ogVideo =
+        html.match(
+          /<meta[^>]+property=["']og:video:secure_url["'][^>]+content=["']([^"']+)["']/i
+        ) ||
+        html.match(
+          /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:video:secure_url["']/i
+        ) ||
+        html.match(
+          /<meta[^>]+property=["']og:video["'][^>]+content=["']([^"']+)["']/i
+        ) ||
+        html.match(
+          /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:video["']/i
+        );
+
+      if (ogVideo) {
+        videoUrl = ogVideo[1];
+      }
+    }
+
+    /*
+     * Thumbnail
+     */
+
+    const ogImage =
       html.match(
         /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i
       ) ||
@@ -66,31 +150,27 @@ export default async function handler(req, res) {
         /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i
       );
 
-    if (!videoMatch) {
-      return res.status(404).json({
-        error:
-          "Instagram did not expose a downloadable video URL for this Reel. The Reel may be private or Instagram may have changed its page data."
-      });
+    if (ogImage) {
+      thumbnail = ogImage[1];
     }
 
-    const videoUrl = videoMatch[1]
-      .replace(/&amp;/g, "&")
-      .replace(/&#x2F;/g, "/");
-
-    const thumbnail = imageMatch
-      ? imageMatch[1]
-          .replace(/&amp;/g, "&")
-          .replace(/&#x2F;/g, "/")
-      : null;
+    if (!videoUrl) {
+      return res.status(404).json({
+        error:
+          "Instagram did not expose a downloadable video for this Reel. The Reel may be private, restricted, or Instagram may have changed its page data."
+      });
+    }
 
     return res.status(200).json({
       success: true,
       videoUrl,
       thumbnail,
-      originalUrl: permalink
+      originalUrl: permalink,
+      shortcode: code
     });
+
   } catch (error) {
-    console.error("Instagram fetch error:", error);
+    console.error("Instagram extraction error:", error);
 
     return res.status(500).json({
       error: "Unable to fetch this Instagram Reel right now."
