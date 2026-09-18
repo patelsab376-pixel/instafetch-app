@@ -1,1 +1,7 @@
-
+{
+  "functions": {
+    "api/media.js": {
+      "runtime": "nodejs24.x"
+    }
+  }
+}
